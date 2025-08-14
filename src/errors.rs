@@ -121,11 +121,11 @@ impl<E: super::methods::RpcHandlerError> From<RpcError> for JsonRpcError<E> {
         let mut handler_parse_error = None;
         match err.error_struct {
             Some(RpcErrorKind::HandlerError(ref handler_error)) => {
-                match E::parse(handler_error.clone()) {
+                match E::parse(*handler_error.clone()) {
                     Ok(handler_error) => {
                         return JsonRpcError::ServerError(JsonRpcServerError::HandlerError(
                             handler_error,
-                        ))
+                        ));
                     }
                     Err(err) => {
                         handler_parse_error.replace(err);
@@ -140,16 +140,16 @@ impl<E: super::methods::RpcHandlerError> From<RpcError> for JsonRpcError<E> {
                     info: err["info"]["error_message"]
                         .as_str()
                         .map(|info| info.to_string()),
-                })
+                });
             }
             None => {}
         }
         if let Some(ref raw_err_data) = err.data {
-            match E::parse_legacy_error(raw_err_data.clone()) {
+            match E::parse_legacy_error(*raw_err_data.clone()) {
                 Some(Ok(handler_error)) => {
                     return JsonRpcError::ServerError(JsonRpcServerError::HandlerError(
                         handler_error,
-                    ))
+                    ));
                 }
                 Some(Err(err)) => {
                     handler_parse_error.replace(err);
